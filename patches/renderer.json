@@ -1,0 +1,44 @@
+{
+  "original_sha256": "934211b4089a0c744cec62d79c07118a2f11fea6ad03abcdac648f282e8e5313",
+  "patched_sha256": "c54f345111269119da3275f9fb95dfdc52e367a0baa9d32e43dde467ad44d4eb",
+  "source_member": "out/renderer-process/assets/index-eb194125.js",
+  "patches": [
+    {
+      "name": "tab click resolves labeled ancestor",
+      "source_line": 82973,
+      "before": "  }, [children]);\n  return /* @__PURE__ */ jsxRuntimeExports.jsx(\"div\", { className: style$k[\"tab-options\"], onClick: (event) => {\n    const target = event.target;\n    if (target.classList.contains(style$k[\"tab-options\"]) == false) {\n      onClick(target.dataset.key, target.dataset.title);\n    }\n  }, children });",
+      "after": "  }, [onChange]);\n  return /* @__PURE__ */ jsxRuntimeExports.jsx(\"div\", { className: style$k[\"tab-options\"], onClick: (event) => {\n    const target = event.target.closest?.(\"[data-key]\");\n    if (target != null && event.currentTarget.contains(target)) {\n      onClick(target.dataset.key, target.dataset.title);\n    }\n  }, children });"
+    },
+    {
+      "name": "actuation input retains editable draft",
+      "source_line": 85261,
+      "before": "  }, [previewPerKeyActuationStates, selectedKeys]);\n  const [selectedPreset, setSelectedPreset] = reactExports.useState(",
+      "after": "  }, [previewPerKeyActuationStates, selectedKeys]);\n  const [actuationInputDraft, setActuationInputDraft] = reactExports.useState(collectiveActuationInputValue);\n  reactExports.useEffect(() => {\n    setActuationInputDraft(collectiveActuationInputValue);\n  }, [collectiveActuationInputValue, selectedKeys]);\n  const [selectedPreset, setSelectedPreset] = reactExports.useState("
+    },
+    {
+      "name": "actuation input validates before preview update",
+      "source_line": 85356,
+      "before": "  }, [previewPerKeyActuationStates, selectedKeys]);\n  const rapidTriggerStates = reactExports.useMemo(() => {",
+      "after": "  }, [previewPerKeyActuationStates, selectedKeys]);\n  const actuationInput_onBlur = reactExports.useCallback((value2) => {\n    const text2 = value2.trim();\n    if (selectedKeys.length == 0 || !/^(?:\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(?:mm)?$/i.test(text2)) {\n      setActuationInputDraft(collectiveActuationInputValue);\n      return;\n    }\n    const depth = Number(text2.replace(/\\s*mm$/i, \"\"));\n    if (!Number.isFinite(depth) || depth < MIN_ACUTATION_DEPTH || depth > MAX_ACUTATION_DEPTH) {\n      setActuationInputDraft(collectiveActuationInputValue);\n      return;\n    }\n    const value3 = Math.round(depth * 10) / 10;\n    actuationSlider_onChange(value3);\n    setActuationInputDraft(`${value3.toFixed(1)} mm`);\n  }, [selectedKeys, collectiveActuationInputValue, actuationSlider_onChange]);\n  const rapidTriggerStates = reactExports.useMemo(() => {"
+    },
+    {
+      "name": "wire actuation input",
+      "source_line": 85581,
+      "before": "                      value: collectiveActuationInputValue,\n                      onChange: (value2) => console.log(\"actuation\", value2),",
+      "after": "                      value: actuationInputDraft,\n                      onChange: setActuationInputDraft,\n                      onBlur: actuationInput_onBlur,\n                      disabled: selectedKeys.length == 0,"
+    },
+    {
+      "name": "quick select filters physical keys",
+      "source_line": 85746,
+      "before": "            } else if (key2 == \"all\") {\n              const keys22 = Object.keys(deviceSupportData.deviceLayout.components);\n              setSelectedKeys(keys22);\n              return;\n            }\n            const keysSet = /* @__PURE__ */ new Set([\n              ...selectedKeys,\n              ...data\n            ]);\n            const keys2 = Array.from(keysSet);\n            setSelectedKeys(keys2);",
+      "after": "            }\n            const layoutData = keybedSize == 100 ? GMMK3HE100WiredANSI.deviceLayout : keybedSize == 75 ? GMMK3HE75WiredANSI.deviceLayout : GMMK3HE65WiredANSI.deviceLayout;\n            const selectableKeys = new Set(Object.keys(layoutData.components).filter((identifier) => HiddenKeys.All.indexOf(identifier) == -1 && HiddenKeys[keybedSize].indexOf(identifier) == -1 && KeyPositions_ANSI[keybedSize].has(identifier)));\n            if (key2 == \"all\") {\n              setSelectedKeys(Array.from(selectableKeys));\n              return;\n            }\n            const keysSet = /* @__PURE__ */ new Set([\n              ...selectedKeys,\n              ...data\n            ]);\n            const keys2 = Array.from(keysSet).filter((identifier) => selectableKeys.has(identifier));\n            setSelectedKeys(keys2);"
+    },
+    {
+      "name": "profile card body and keyboard activation",
+      "source_line": 62999,
+      "before": "  return /* @__PURE__ */ jsxRuntimeExports.jsxs(\"div\", { className: classNames$1(style$1U[\"profile-tile\"], props.tileClass), children: [",
+      "after": "  return /* @__PURE__ */ jsxRuntimeExports.jsxs(\"div\", { className: classNames$1(style$1U[\"profile-tile\"], props.tileClass), role: \"button\", tabIndex: 0, \"aria-label\": `Activate ${profileName}`, onClick: (event) => {\n    if (event.target.closest?.(`.${style$1U[\"more-btn-container\"]}, .${style$1U[\"profileStatusIcon\"]}`) == null) {\n      handleActivationClick();\n    }\n  }, onKeyDown: (event) => {\n    if (event.target == event.currentTarget && (event.key == \"Enter\" || event.key == \" \")) {\n      event.preventDefault();\n      handleActivationClick();\n    }\n  }, children: ["
+    }
+  ],
+  "unchanged_scope": "Existing profile activation and Save callbacks retained. No IPC, hardware, installed app, or live configuration changes."
+}

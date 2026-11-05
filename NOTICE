@@ -1,0 +1,11 @@
+Glorious CORE repair is an unofficial project and is not endorsed by Glorious.
+
+The MIT license applies to project-authored tooling and test harnesses. It does
+not relicense Glorious CORE, vendor JavaScript, firmware, artwork, native
+binaries, or other third-party material. Minimal vendor context retained in
+patches remains third-party material under its existing ownership and terms.
+
+This repository does not distribute the application, complete extracted vendor
+JavaScript, firmware, native binaries, private logs, or user profiles. Users
+supply their own local application archive. Product names identify the software
+and hardware to which the compatibility notes refer.

@@ -1,0 +1,52 @@
+{
+  "base_file": "main.js",
+  "base_sha256": "9de8428785a7a0aee5aa965a782d41c891152411cb47051fa386ac802149bb75",
+  "patched_file": "main.patched.js",
+  "patched_sha256": "9c30803cd8a09c232b172f5737eb09dc880756d52257d7b254c8d15ad31603a3",
+  "scope": "Only GMMK3HEDeviceHandler. No installed sources, hardware configuration, or firmware changed.",
+  "changes": [
+    {
+      "name": "Commit target layer after writes while preserving active selection",
+      "unique_anchor": "static async updateActuation(deviceState, updatedDeviceState)",
+      "before": "    device.rendererState = updatedDeviceState;\n    const profile = device.rendererState.currentProfileData;\n    await GMMK3HEDeviceHandler.#setCustomActuationMode(device);\n    await GMMK3HEDeviceHandler.#setGlobalActuationAndRapidTrigger(device, profile);\n    await GMMK3HEDeviceHandler.#setPerKeyActuationAndRapidTrigger(device, profile);\n    DataStorage.saveDeviceInstance(device.toRecord());\n    DataStorage.saveDeviceProfile(device.rendererState.currentProfileData);\n    return device.rendererState;",
+      "after": "    const profile = updatedDeviceState.currentProfileData;\n    const targetLayerIndex = profile.activeLayerIndex;\n    const profileIndex = device.deviceProfiles.findIndex((item) => item.id == profile.id);\n    if (profileIndex < 0) {\n      throw new Error(\"Unable to find actuation target in device profile cache\");\n    }\n    await GMMK3HEDeviceHandler.#setCustomActuationMode(device);\n    await GMMK3HEDeviceHandler.#setGlobalActuationAndRapidTrigger(device, profile);\n    await GMMK3HEDeviceHandler.#setPerKeyActuationAndRapidTrigger(device, profile);\n    const activeProfile = device.rendererState.currentProfileData;\n    const savedProfile = activeProfile.id == profile.id ? activeProfile : device.deviceProfiles[profileIndex];\n    savedProfile.layers[targetLayerIndex].HEProperties = profile.layers[targetLayerIndex].HEProperties;\n    device.deviceProfiles[profileIndex] = savedProfile;\n    DataStorage.saveDeviceInstance(device.toRecord());\n    DataStorage.saveDeviceProfile(savedProfile);\n    return device.rendererState;"
+    },
+    {
+      "name": "Keep cached profile and active profile consistent",
+      "unique_anchor": "  static #setActiveProfileAndSaveState(device, profile) {",
+      "before": "  static #setActiveProfileAndSaveState(device, profile) {\n    device.rendererState.currentProfileData = profile;\n    DataStorage.saveDeviceInstance(device.toRecord());\n  }",
+      "after": "  static #setActiveProfileAndSaveState(device, profile) {\n    const profileIndex = device.deviceProfiles.findIndex((item) => item.id == profile.id);\n    if (profileIndex < 0) {\n      throw new Error(\"Unable to find active profile in device profile cache\");\n    }\n    device.deviceProfiles[profileIndex] = profile;\n    device.rendererState.currentProfileData = profile;\n    DataStorage.saveDeviceInstance(device.toRecord());\n  }"
+    },
+    {
+      "name": "Skip keys absent from physical layout",
+      "unique_anchor": "      const keyNumberPhysical = PhysicalKeyMapping(device.supportedDeviceData.productId)[keyData.keyIdentifier];",
+      "before": "      const keyNumberPhysical = PhysicalKeyMapping(device.supportedDeviceData.productId)[keyData.keyIdentifier];\n      PrepareActuationPointAndRapidTriggerMagnetismReport(",
+      "after": "      const keyNumberPhysical = PhysicalKeyMapping(device.supportedDeviceData.productId)[keyData.keyIdentifier];\n      if (keyNumberPhysical == null) {\n        Logger.logError(`Skipping actuation for unmapped key: ${keyData.keyIdentifier}`);\n        continue;\n      }\n      PrepareActuationPointAndRapidTriggerMagnetismReport("
+    },
+    {
+      "name": "Fail when HE write handle is absent",
+      "unique_anchor": "    if (deviceID == null) {",
+      "before": "    if (deviceID == null) {\n      Logger.logError(\"Unable to find device's current HID write ID\");\n      return 0;\n    }",
+      "after": "    if (deviceID == null) {\n      throw new Error(\"Unable to find device's current HID write ID\");\n    }"
+    },
+    {
+      "name": "Reject failed HE Bluetooth writes",
+      "unique_anchor": "        const bytesWritten = HID.setHIDWrite(deviceID, 6, reportBT.length, reportBT);",
+      "before": "        const bytesWritten = HID.setHIDWrite(deviceID, 6, reportBT.length, reportBT);\n        setTimeout(() => resolve(bytesWritten), delayAfter);",
+      "after": "        const bytesWritten = HID.setHIDWrite(deviceID, 6, reportBT.length, reportBT);\n        if (bytesWritten < 0) {\n          throw new Error(`Failed to send GMMK 3 HE Bluetooth report: ${bytesWritten}`);\n        }\n        setTimeout(() => resolve(bytesWritten), delayAfter);"
+    },
+    {
+      "name": "Reject failed HE feature reports",
+      "unique_anchor": "      if (bytesWritten < 0) {",
+      "before": "      if (bytesWritten < 0) {\n        console.error(\"GMMK 3 PRO HE\", \"Failed to send report\");\n      } else {\n        console.debug(\"GMMK 3 PRO HE\", `Report sent`);\n      }",
+      "after": "      if (bytesWritten < 0) {\n        throw new Error(`Failed to send GMMK 3 HE feature report: ${bytesWritten}`);\n      }\n      console.debug(\"GMMK 3 PRO HE\", `Report sent`);"
+    }
+  ],
+  "reset_paths_audited": "resetAllProperties and _resetAllProperties already replace their cache and active renderer profile together at completion.",
+  "limits": [
+    "No hardware acknowledgement or settings readback is added. Negative transport results now surface as failures.",
+    "Existing zero-return semantics are retained because the native API return contract is not established.",
+    "A mid-sequence write failure can leave partial device state. No automatic hardware rollback is attempted."
+  ],
+  "concurrency": "Actuation packets explicitly target a profile and layer. Commit merges only that layer HEProperties into the latest profile without changing active profile or layer."
+}

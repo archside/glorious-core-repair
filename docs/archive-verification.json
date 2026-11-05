@@ -1,0 +1,15 @@
+{
+  "sourceSha256": "5a3fd42e820bfa5ee3a89d019b714816f970c9e42103a04364804bce96a5d1ea",
+  "outputSha256": "e44aa029b9f0cf3d295b18fe9e69f326dcc8cb80a9d1acfc0b2daac735d41eef",
+  "changedMembers": [
+    "out/main/index.js",
+    "out/renderer-process/assets/index-eb194125.js"
+  ],
+  "unchangedFiles": 2951,
+  "directories": 804,
+  "unpackedFiles": 55,
+  "originalPayloadPreserved": true,
+  "sourceUnmodified": true,
+  "applicationLaunched": false,
+  "hardwareAccessed": false
+}

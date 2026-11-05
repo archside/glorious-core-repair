@@ -1,0 +1,15 @@
+{
+  "name": "glorious-core-repair",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Exact-build local patches for CORE profile persistence and HE actuation controls",
+  "license": "MIT",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "test:vendor": "node scripts/test-vendor.mjs"
+  },
+  "dependencies": { "@electron/asar": "4.2.0" },
+  "overrides": { "glob": "14.0.3", "minimatch": "11.0.4" }
+}
